@@ -3,6 +3,7 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
+const mongoose = require('mongoose');
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
@@ -28,6 +29,12 @@ app.use('/dishes',dishRouter);
 app.use('/leaders',leadersRouter);
 app.use('/promotions',promoRouter);
 
+
+const url = 'mongodb://0.0.0.0:27017/assignment2';
+const connect = mongoose.connect(url);
+connect.then((db) => {
+  console.log("Connected to server");
+}, (err) => {console.log(err)});
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
