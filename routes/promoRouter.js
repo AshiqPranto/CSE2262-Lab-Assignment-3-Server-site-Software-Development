@@ -9,11 +9,6 @@ const promoRouter = express.Router();
 promoRouter.use(bodyParser.json());
 
 promoRouter.route('/')
-// .all((req,res,next) => {
-//     res.statusCode = 200;
-//     res.setHeader('Content-Type','Text/plain');
-//     next();
-// })
 .get((req,res,next) => {
     promotions.find({})
     .then((promotions) => {
