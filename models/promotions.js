@@ -1,6 +1,7 @@
 const mongoose = require('mongoose')
 const Schema = mongoose.Schema;
 
+
 var promotionsSchema = new Schema({
     name:{
         type:String,
@@ -12,10 +13,12 @@ var promotionsSchema = new Schema({
     },
     label: {
         type: String,
+        default: '',
         required: true
     },
     price: {
         type: Number,
+        min: 0,
         required: true
     },
     description: {
