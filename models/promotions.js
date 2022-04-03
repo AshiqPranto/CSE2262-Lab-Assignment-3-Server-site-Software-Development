@@ -9,6 +9,22 @@ var promotionsSchema = new Schema({
     image:{
         type: String,
         rquired: true
+    },
+    label: {
+        type: String,
+        required: true
+    },
+    price: {
+        type: Number,
+        required: true
+    },
+    description: {
+        type: String,
+        required: true
+    },
+    featured: {
+        type: Boolean,
+        required: true
     }
 })
 
