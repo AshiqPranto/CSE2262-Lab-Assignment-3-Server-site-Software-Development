@@ -15,7 +15,7 @@ var leadersSchema = new Schema({
         required: true
     },
     abbr: {
-        type: Number,
+        type: String,
         required: true
     },
     description: {
