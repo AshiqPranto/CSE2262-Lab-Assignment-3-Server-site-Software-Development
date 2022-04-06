@@ -41,7 +41,6 @@ leadersRouter.route('/')
     .catch((err) => next(err));
 });
 
-
 leadersRouter.route('/:leaderId')
 .get((req, res, next) => {
     leaders.findById(req.params.leaderId)
