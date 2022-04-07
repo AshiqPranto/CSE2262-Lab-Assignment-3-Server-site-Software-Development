@@ -1,5 +1,6 @@
 var createError = require('http-errors');
 var express = require('express');
+var dotenv = require('dotenv');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
@@ -12,6 +13,7 @@ var leadersRouter = require('./routes/leadersRouter');
 var promoRouter = require('./routes/promoRouter');
 
 var app = express();
+dotenv.config();
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));

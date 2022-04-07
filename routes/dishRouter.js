@@ -5,6 +5,8 @@ const dishRouter = express.Router();
 const dishes = require('../models/dishes');
 const leadersRouter = require('./leadersRouter');
 const Leaders = require('../models/leaders');
+const verifyUser = require('../middlewears/verifyUser');
+const verifyAdmin = require('../middlewears/verifyAdmin');
 
 dishRouter.use(bodyParser.json());
 
@@ -18,19 +20,20 @@ dishRouter.route('/')
     },(err) => next(err))
     .catch((err) => next(err));
 })
-.post((req, res, next) => {
+.post(verifyUser,verifyAdmin,(req, res, next) => {
     dishes.create(req.body)
     .then((dishes) => {
         res.statusCode = 200;
+        
         res.json(dishes);
     },(err) => next(err))
     .catch((err) => next(err));
 })
-.put((req, res, next) => {
+.put(verifyUser, verifyAdmin, (req, res, next) => {
     res.statusCode = 403;
     res.end('PUT operation not supported on /dishes');
 })
-.delete((req, res, next) => {
+.delete(verifyUser, verifyAdmin, (req, res, next) => {
     dishes.remove({})
     .then((resp) => {
         res.json(resp);
@@ -45,18 +48,18 @@ dishRouter.route('/:dishId')
     },(err) => next(err))
     .catch((err) => next(err));
 })
-.post((req, res, next) => {
+.post(verifyUser, verifyAdmin, (req, res, next) => {
     res.statusCode = 403;
     res.end('POST operation not supported on /dishes/' + req.params.dishId);
 })
-.put((req, res, next) => {
+.put(verifyUser, verifyAdmin, (req, res, next) => {
     dishes.findByIdAndUpdate(req.params.dishId,{$set: req.body})
     .then((dishes) => {
         res.json(dishes);
     },(err) => next(err))
     .catch((err) => next(err));
 })
-.delete((req, res, next) => {
+.delete(verifyUser, verifyAdmin, (req, res, next) => {
     dishes.findByIdAndRemove(req.params.dishId)
     .then((resp) => {
         res.json(resp);
@@ -71,11 +74,12 @@ dishRouter.route('/:dishId/comments')
         res.json(dishes.comments);
     })
 })
-.post((req,res,next) => {
+.post(verifyUser,(req,res,next) => {
     console.log('post method catched');
     dishes.findById(req.params.dishId)
     .then((dish) => {
         console.log(dish);
+        req.body.author = req.userId;
         dish.comments.push(req.body);
         dish.save()
         .then((dish) => {
@@ -85,11 +89,11 @@ dishRouter.route('/:dishId/comments')
     },(err) => next(err))
     .catch( (err) => next(err));
 })
-.put((req,res,next) => {
+.put(verifyUser, (req,res,next) => {
     console.log('put method catched');
     res.end('put operations not supported');
 })
-.delete((req,res,next) => {
+.delete(verifyUser, verifyAdmin, (req,res,next) => {
     dishes.findById(req.params.dishId)
     .then((dish) => {
         for(var i = (dish.comments.length -1);i>=0;i--)
@@ -113,31 +117,46 @@ dishRouter.route('/:dishId/comments/:commentId')
     })
     .catch((err) => next(err));
 })
-.post((req,res,next) => {
+.post(verifyUser, (req,res,next) => {
     res.end('post operations not supported');
 })
-.put((req,res,next) => {
+.put(verifyUser, (req,res,next) => {
     dishes.findById(req.params.dishId)
     .then((dish) => {
-        dish.comments.id(req.params.commentId).comment = req.body.comment;
-        dish.comments.id(req.params.commentId).rating = req.body.rating;
-        dish.save()
-        .then((dish) => {
-            res.json(dish);
-        })
-        .catch((err) => next(err));
+        var userId = req.userId;
+        if(!userId.localeCompare(dish.comments.id(req.params.commentId).author))
+        {
+            dish.comments.id(req.params.commentId).comment = req.body.comment;
+            dish.comments.id(req.params.commentId).rating = req.body.rating;
+            dish.save()
+            .then((dish) => {
+                res.json(dish);
+            })
+            .catch((err) => next(err));
+        }
+        else{
+            var err = new Error('Only author of this comment can update');
+            next(err);
+        }
     })
     .catch((err) => next(err));
 })
-.delete((req,res,next) => {
+.delete(verifyUser, (req,res,next) => {
     dishes.findById(req.params.dishId)
     .then((dish) => {
-        dish.comments.id(req.params.commentId).remove();
-        dish.save()
-        .then((dish) => {
-            res.json(dish);
-        })
-        .catch((err) => next(err));
+        if(req.userId.localeCompare(dish.comments.id(req.params.commentId).author))
+        {
+            dish.comments.id(req.params.commentId).remove();
+            dish.save()
+            .then((dish) => {
+                res.json(dish);
+            })
+            .catch((err) => next(err));
+        }
+        else{
+            var err = new Error('Only author of this comment can delete');
+            next(err);
+        }
     })
     .catch((err) => next(err));
 });
